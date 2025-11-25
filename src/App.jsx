@@ -6,34 +6,37 @@ import useDebounce from "./useDebounce";
 import Login from "./Login";
 
 export default function App() {
+  // LOGIN SESSION
   const [loggedIn, setLoggedIn] = useState(false);
 
+  // TASK STATES
   const [tasks, setTasks] = useState([]);
   const [editingTask, setEditingTask] = useState(null);
 
+  // FILTER + SEARCH
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
-
   const debouncedSearch = useDebounce(search, 400);
 
+  // CHECK SESSION
   useEffect(() => {
     const s = sessionStorage.getItem("loggedIn");
     if (s === "true") setLoggedIn(true);
   }, []);
 
-  // ADD
+  // ADD TASK
   const handleAddTask = (task) => {
     setTasks([...tasks, task]);
   };
 
-  // DELETE
+  // DELETE TASK
   const handleDelete = (id) => {
     if (window.confirm("Delete this task?")) {
       setTasks(tasks.filter((t) => t.id !== id));
     }
   };
 
-  // TOGGLE
+  // TOGGLE COMPLETE
   const handleToggle = (id) => {
     setTasks(
       tasks.map((t) =>
@@ -42,19 +45,22 @@ export default function App() {
     );
   };
 
-  // EDIT
+  // OPEN EDIT MODAL
   const handleEdit = (task) => {
     setEditingTask(task);
   };
 
+  // SAVE EDITED TASK
   const handleSaveEdit = (updatedTask) => {
     setTasks(
-      tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t))
+      tasks.map((t) =>
+        t.id === updatedTask.id ? updatedTask : t
+      )
     );
     setEditingTask(null);
   };
 
-  // FILTER + SEARCH
+  // FILTER + SEARCH PIPELINE
   const filteredTasks = tasks
     .filter((t) => {
       if (filter === "All") return true;
@@ -73,7 +79,7 @@ export default function App() {
     setLoggedIn(false);
   };
 
-  // EMAIL "AUTOMATION"
+  // EMAIL AUTOMATION (every 20 minutes)
   useEffect(() => {
     const interval = setInterval(() => {
       const pending = tasks.filter((t) => !t.completed);
@@ -89,11 +95,12 @@ export default function App() {
     return () => clearInterval(interval);
   }, [tasks]);
 
-  // SHOW LOGIN IF USER IS NOT LOGGED IN
+  // SHOW LOGIN SCREEN IF NOT LOGGED IN
   if (!loggedIn) return <Login onLogin={() => setLoggedIn(true)} />;
 
   return (
     <div style={{ padding: "20px" }}>
+      {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <h1 style={{ fontSize: "24px" }}>Task Manager</h1>
 
@@ -105,6 +112,7 @@ export default function App() {
             color: "white",
             border: "none",
             borderRadius: "4px",
+            cursor: "pointer",
           }}
         >
           Logout
@@ -135,7 +143,10 @@ export default function App() {
         <button onClick={() => setFilter("High")}>High Priority</button>
       </div>
 
+      {/* CREATE TASK */}
       <TaskForm onAdd={handleAddTask} />
+
+      {/* TASK LIST */}
       <TaskList
         tasks={filteredTasks}
         onEdit={handleEdit}
@@ -143,6 +154,7 @@ export default function App() {
         onToggle={handleToggle}
       />
 
+      {/* EDIT MODAL */}
       {editingTask && (
         <EditModal
           task={editingTask}
