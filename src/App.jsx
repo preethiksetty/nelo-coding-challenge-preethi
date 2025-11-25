@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TaskForm from "./TaskForm";
 import TaskList from "./TaskList";
 import EditModal from "./EditModal";
 import useDebounce from "./useDebounce";
+import Login from "./Login";
 
 export default function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
+
   const [tasks, setTasks] = useState([]);
   const [editingTask, setEditingTask] = useState(null);
 
@@ -12,6 +15,11 @@ export default function App() {
   const [search, setSearch] = useState("");
 
   const debouncedSearch = useDebounce(search, 400);
+
+  useEffect(() => {
+    const s = sessionStorage.getItem("loggedIn");
+    if (s === "true") setLoggedIn(true);
+  }, []);
 
   // ADD
   const handleAddTask = (task) => {
@@ -25,7 +33,7 @@ export default function App() {
     }
   };
 
-  // TOGGLE COMPLETE
+  // TOGGLE
   const handleToggle = (id) => {
     setTasks(
       tasks.map((t) =>
@@ -34,12 +42,11 @@ export default function App() {
     );
   };
 
-  // OPEN EDIT MODAL
+  // EDIT
   const handleEdit = (task) => {
     setEditingTask(task);
   };
 
-  // SAVE UPDATED TASK
   const handleSaveEdit = (updatedTask) => {
     setTasks(
       tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t))
@@ -60,13 +67,51 @@ export default function App() {
       t.title.toLowerCase().includes(debouncedSearch.toLowerCase())
     );
 
+  // LOGOUT
+  const handleLogout = () => {
+    sessionStorage.removeItem("loggedIn");
+    setLoggedIn(false);
+  };
+
+  // EMAIL "AUTOMATION"
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const pending = tasks.filter((t) => !t.completed);
+
+      if (pending.length > 0) {
+        console.log("📧 Email Reminder:");
+        pending.forEach((t) => {
+          console.log(`Reminder: "${t.title}" is still pending.`);
+        });
+      }
+    }, 20 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [tasks]);
+
+  // SHOW LOGIN IF USER IS NOT LOGGED IN
+  if (!loggedIn) return <Login onLogin={() => setLoggedIn(true)} />;
+
   return (
     <div style={{ padding: "20px" }}>
-      <h1 style={{ fontSize: "24px", marginBottom: "10px" }}>
-        Task Manager
-      </h1>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <h1 style={{ fontSize: "24px" }}>Task Manager</h1>
 
-      {/* Search */}
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "6px 12px",
+            background: "#ef4444",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* SEARCH */}
       <input
         type="text"
         placeholder="Search tasks..."
@@ -82,7 +127,7 @@ export default function App() {
         }}
       />
 
-      {/* Filters */}
+      {/* FILTERS */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
         <button onClick={() => setFilter("All")}>All</button>
         <button onClick={() => setFilter("Completed")}>Completed</button>
@@ -91,7 +136,6 @@ export default function App() {
       </div>
 
       <TaskForm onAdd={handleAddTask} />
-
       <TaskList
         tasks={filteredTasks}
         onEdit={handleEdit}
