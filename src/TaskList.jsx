@@ -1,6 +1,6 @@
 export default function TaskList({ tasks, onEdit, onDelete, onToggle }) {
   if (tasks.length === 0) {
-    return <p style={{ marginTop: "20px" }}>No tasks added yet.</p>;
+    return <p style={{ marginTop: "20px" }}>No tasks found.</p>;
   }
 
   return (
@@ -22,28 +22,25 @@ export default function TaskList({ tasks, onEdit, onDelete, onToggle }) {
             background: "#fafafa",
           }}
         >
-          <h3 style={{ marginBottom: "6px" }}>{task.title}</h3>
+          <h3>{task.title}</h3>
 
           {task.description && (
-            <p style={{ marginBottom: "6px", color: "#555" }}>
-              {task.description}
-            </p>
+            <p style={{ color: "#555" }}>{task.description}</p>
           )}
 
-          <div style={{ fontSize: "14px", marginBottom: "4px" }}>
+          <p style={{ fontSize: "14px" }}>
             <strong>Priority:</strong> {task.priority}
-          </div>
+          </p>
 
-          <div style={{ fontSize: "14px", marginBottom: "4px" }}>
-            <strong>Due:</strong> {task.dueDate || "—"}
-          </div>
+          <p style={{ fontSize: "14px" }}>
+            <strong>Due Date:</strong> {task.dueDate || "—"}
+          </p>
 
-          <div style={{ fontSize: "14px" }}>
+          <p style={{ fontSize: "14px" }}>
             <strong>Status:</strong>{" "}
             {task.completed ? "Completed" : "Pending"}
-          </div>
+          </p>
 
-          {/* BUTTONS */}
           <div
             style={{
               marginTop: "10px",
@@ -51,10 +48,7 @@ export default function TaskList({ tasks, onEdit, onDelete, onToggle }) {
               gap: "10px",
             }}
           >
-            <button
-              style={styles.editBtn}
-              onClick={() => onEdit(task)}
-            >
+            <button style={styles.editBtn} onClick={() => onEdit(task)}>
               Edit
             </button>
 
